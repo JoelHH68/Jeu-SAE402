@@ -11,10 +11,13 @@ backgroundImage.src = 'Img/maison_henriette.png';
 // --- COORDONNÉES AGRANDIES (Basées sur 600x800) ---
 // J'ai augmenté la taille des fenêtres (w:120, h:150) pour faciliter le toucher
 const windows = [
-    { id: 0, x: 100, y: 150, w: 150, h: 200, active: false }, 
-    { id: 1, x: 350, y: 150, w: 150, h: 200, active: false }, 
-    { id: 2, x: 100, y: 450, w: 150, h: 200, active: false }, 
-    { id: 3, x: 350, y: 450, w: 150, h: 200, active: false }
+    { id: 0, x: 110, y: 140, w: 32, h: 32, active: false }, 
+    { id: 1, x: 185, y: 140, w: 32, h: 32, active: false }, 
+    { id: 2, x: 262, y: 140, w: 32, h: 32, active: false }, 
+    { id: 3, x: 110, y: 220, w: 32, h: 33, active: false }, 
+    { id: 4, x: 185, y: 220, w: 32, h: 33, active: false }, 
+    { id: 5, x: 262, y: 220, w: 32, h: 33, active: false }
+    
 ];
 
 let sequence = [];
@@ -90,6 +93,46 @@ function draw() {
         }
     });
 }
+
+// function draw() {
+//     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+//     // 1. Dessin de l'image de fond
+//     if (backgroundImage.complete) {
+//         ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+//     }
+
+//     // 2. DESSIN DES CASES DE DÉBOGAGE (PROVISOIRE)
+//     // Retire ce bloc une fois que tes fenêtres sont bien calées
+//     ctx.save();
+//     ctx.strokeStyle = "red";
+//     ctx.lineWidth = 3;
+//     ctx.fillStyle = "rgba(255, 0, 0, 0.3)"; // Rouge transparent
+//     windows.forEach(win => {
+//         ctx.fillRect(win.x, win.y, win.w, win.h);
+//         ctx.strokeRect(win.x, win.y, win.w, win.h);
+//         // Affiche l'ID pour savoir quelle ligne du code modifier
+//         ctx.fillStyle = "white";
+//         ctx.font = "20px Arial";
+//         ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
+//     });
+//     ctx.restore();
+
+//     // 3. Dessin des effets quand une fenêtre est active (le jeu normal)
+//     windows.forEach((win) => {
+//         if(win.active) {
+//             ctx.save();
+//             ctx.fillStyle = "rgba(255, 255, 255, 0.6)"; 
+//             ctx.fillRect(win.x, win.y, win.w, win.h);
+//             ctx.fillStyle = playerColor;
+//             ctx.font = "bold 80px serif";
+//             ctx.textAlign = "center";
+//             ctx.textBaseline = "middle";
+//             ctx.fillText(patternChar, win.x + win.w/2, win.y + win.h/2);
+//             ctx.restore();
+//         }
+//     });
+// }
 
 // GESTION TOUCHER MOBILE AVEC CALCUL DE RATIO
 canvas.addEventListener('touchstart', (e) => {
