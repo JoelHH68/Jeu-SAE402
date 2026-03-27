@@ -8,13 +8,13 @@ const patternChar = "❁";
 const backgroundImage = new Image();
 backgroundImage.src = 'Img/maison_henriette.png';
 
-// --- COORDONNÉES ADAPTÉES (Ratio 400x500 pour mobile) ---
-// Tu devras peut-être les ré-ajuster légèrement pour ton image mobile
+// --- COORDONNÉES AGRANDIES (Basées sur 600x800) ---
+// J'ai augmenté la taille des fenêtres (w:120, h:150) pour faciliter le toucher
 const windows = [
-    { id: 0, x: 80, y: 100, w: 70, h: 90, active: false }, 
-    { id: 1, x: 250, y: 100, w: 70, h: 90, active: false }, 
-    { id: 2, x: 80, y: 280, w: 70, h: 90, active: false }, 
-    { id: 3, x: 250, y: 280, w: 70, h: 90, active: false }
+    { id: 0, x: 100, y: 150, w: 150, h: 200, active: false }, 
+    { id: 1, x: 350, y: 150, w: 150, h: 200, active: false }, 
+    { id: 2, x: 100, y: 450, w: 150, h: 200, active: false }, 
+    { id: 3, x: 350, y: 450, w: 150, h: 200, active: false }
 ];
 
 let sequence = [];
@@ -22,9 +22,9 @@ let playerStep = 0;
 let isWatching = true;
 
 backgroundImage.onload = () => {
-    msg.innerText = "Observez les fenêtres...";
+    msg.innerText = "Observez bien...";
     draw();
-    setTimeout(initLevel, 1000);
+    setTimeout(initLevel, 1500);
 };
 
 function initLevel() {
@@ -35,7 +35,8 @@ function initLevel() {
 async function playSequence() {
     isWatching = true;
     playerStep = 0;
-    msg.innerText = "Observez...";
+    msg.innerText = "Séquence en cours...";
+    msg.style.color = "#e6d5b8";
     
     for (let id of sequence) {
         await wait(600);
@@ -45,6 +46,7 @@ async function playSequence() {
     
     isWatching = false;
     msg.innerText = "À vous ! Touchez les fenêtres.";
+    msg.style.color = "gold";
 }
 
 function flashWindow(id) {
@@ -52,23 +54,35 @@ function flashWindow(id) {
     if(win) {
         win.active = true;
         draw();
-        setTimeout(() => { win.active = false; draw(); }, 400);
+        setTimeout(() => { win.active = false; draw(); }, 500);
     }
 }
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
     if (backgroundImage.complete) {
+        // Dessine l'image pour qu'elle remplisse le canvas
         ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
     }
 
     windows.forEach((win) => {
         if(win.active) {
             ctx.save();
-            ctx.fillStyle = "rgba(255, 240, 150, 0.5)"; 
+            // Halo de lumière plus intense pour mobile
+            ctx.fillStyle = "rgba(255, 255, 255, 0.4)"; 
             ctx.fillRect(win.x, win.y, win.w, win.h);
+            
+            ctx.shadowBlur = 30;
+            ctx.shadowColor = "white";
+            ctx.strokeStyle = "gold";
+            ctx.lineWidth = 5;
+            ctx.strokeRect(win.x, win.y, win.w, win.h);
+            
+            // Motif plus gros
             ctx.fillStyle = playerColor;
-            ctx.font = "bold 40px serif";
+            ctx.shadowBlur = 0;
+            ctx.font = "bold 80px serif";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(patternChar, win.x + win.w/2, win.y + win.h/2);
@@ -77,15 +91,15 @@ function draw() {
     });
 }
 
-// --- GESTION DU TOUCHER (MOBILE) ---
+// GESTION TOUCHER MOBILE AVEC CALCUL DE RATIO
 canvas.addEventListener('touchstart', (e) => {
-    e.preventDefault(); // Empêche le comportement par défaut
+    e.preventDefault();
     if (isWatching) return;
 
     const rect = canvas.getBoundingClientRect();
     const touch = e.touches[0];
     
-    // Calcul de la position réelle sur le canvas (gestion du scale CSS)
+    // On calcule où l'utilisateur a touché relativement au dessin interne (600x800)
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
     const mx = (touch.clientX - rect.left) * scaleX;
@@ -107,20 +121,23 @@ function handlePlayerClick(id) {
             else setTimeout(initLevel, 800);
         }
     } else {
-        msg.innerText = "Raté ! On recommence...";
+        msg.innerText = "Erreur ! Henriette recommence...";
+        msg.style.color = "#ff4d4d";
         sequence = [];
-        setTimeout(initLevel, 1000);
+        setTimeout(initLevel, 1200);
     }
 }
 
 function victory() {
     document.getElementById('win-overlay').style.display = 'flex';
+    ctx.globalAlpha = 1;
     ctx.fillStyle = playerColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
     ctx.fillStyle = "white";
-    ctx.font = "40px serif";
-    for(let y=40; y<canvas.height; y+=80) {
-        for(let x=40; x<canvas.width; x+=80) {
+    ctx.font = "60px serif";
+    for(let y=60; y<canvas.height; y+=120) {
+        for(let x=60; x<canvas.width; x+=120) {
             ctx.fillText(patternChar, x, y);
         }
     }
