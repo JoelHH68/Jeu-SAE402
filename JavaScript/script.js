@@ -1,189 +1,205 @@
-const canvas = document.getElementById('memoryCanvas');
-const ctx = canvas.getContext('2d');
-const msg = document.getElementById('msg');
-
-const playerColor = "#D4213D"; 
-const patternChar = "❁"; 
-
-const backgroundImage = new Image();
-backgroundImage.src = 'Img/maison_henriette.png';
-
-// --- COORDONNÉES AGRANDIES (Basées sur 600x800) ---
-// J'ai augmenté la taille des fenêtres (w:120, h:150) pour faciliter le toucher
-const windows = [
-    { id: 0, x: 110, y: 140, w: 32, h: 32, active: false }, 
-    { id: 1, x: 185, y: 140, w: 32, h: 32, active: false }, 
-    { id: 2, x: 262, y: 140, w: 32, h: 32, active: false }, 
-    { id: 3, x: 110, y: 220, w: 32, h: 33, active: false }, 
-    { id: 4, x: 185, y: 220, w: 32, h: 33, active: false }, 
-    { id: 5, x: 262, y: 220, w: 32, h: 33, active: false }
-    
-];
-
-let sequence = [];
-let playerStep = 0;
-let isWatching = true;
-
-backgroundImage.onload = () => {
-    msg.innerText = "Observez bien...";
-    draw();
-    setTimeout(initLevel, 1500);
+/**
+ * CONFIGURATION DU JEU
+ */
+const CONFIG = {
+    playerColor: "#D4213D",
+    patternChar: "❁",
+    imgSrc: 'maison_henriette.jpg',
+    winTarget: 5,
+    // Coordonnées relatives (en % de 0 à 1000 pour la précision)
+    // A ajuster pour tes fenêtres
+    windows: [
+        { id: 0, x: 180, y: 150, w: 120, h: 180 },
+        { id: 1, x: 700, y: 150, w: 120, h: 180 },
+        { id: 2, x: 180, y: 550, w: 120, h: 180 },
+        { id: 3, x: 700, y: 550, w: 120, h: 180 }
+    ]
 };
 
-function initLevel() {
-    sequence.push(Math.floor(Math.random() * windows.length));
-    playSequence();
-}
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+let sequence = [];
+let playerInput = [];
+let gameState = 'LOADING';
+let particles = [];
+let patternCanvas;
 
-async function playSequence() {
-    isWatching = true;
-    playerStep = 0;
-    msg.innerText = "Séquence en cours...";
-    msg.style.color = "#e6d5b8";
+// Initialisation
+const bg = new Image();
+bg.src = CONFIG.imgSrc;
+bg.onload = () => {
+    resize();
+    createPattern();
+    gameState = 'IDLE';
+    startNextLevel();
+};
+
+/**
+ * Génère un pattern textile en mémoire
+ */
+function createPattern() {
+    patternCanvas = document.createElement('canvas');
+    const pCtx = patternCanvas.getContext('2d');
+    patternCanvas.width = 60;
+    patternCanvas.height = 60;
     
-    for (let id of sequence) {
-        await wait(600);
-        flashWindow(id);
-        await wait(600);
-    }
+    // Fond couleur gagnée
+    pCtx.fillStyle = CONFIG.playerColor;
+    pCtx.fillRect(0, 0, 60, 60);
     
-    isWatching = false;
-    msg.innerText = "À vous ! Touchez les fenêtres.";
-    msg.style.color = "gold";
+    // Motif blanc par dessus
+    pCtx.fillStyle = "rgba(255,255,255,0.3)";
+    pCtx.font = "30px serif";
+    pCtx.textAlign = "center";
+    pCtx.textBaseline = "middle";
+    pCtx.fillText(CONFIG.patternChar, 30, 30);
 }
 
-function flashWindow(id) {
-    const win = windows.find(w => w.id === id);
-    if(win) {
-        win.active = true;
-        draw();
-        setTimeout(() => { win.active = false; draw(); }, 500);
-    }
+function resize() {
+    canvas.width = window.innerWidth * window.devicePixelRatio;
+    canvas.height = window.innerHeight * window.devicePixelRatio;
 }
 
-function draw() {
+/**
+ * Loop de rendu principale
+ */
+function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    if (backgroundImage.complete) {
-        // Dessine l'image pour qu'elle remplisse le canvas
-        ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-    }
+    // 1. Fond
+    ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
 
-    windows.forEach((win) => {
-        if(win.active) {
+    // 2. Rendu des fenêtres avec masquage
+    CONFIG.windows.forEach(win => {
+        const rx = (win.x / 1000) * canvas.width;
+        const ry = (win.y / 1000) * canvas.height;
+        const rw = (win.w / 1000) * canvas.width;
+        const rh = (win.h / 1000) * canvas.height;
+
+        // DEBUG : Rectangle rouge de placement (à retirer à la fin)
+        ctx.strokeStyle = "red"; ctx.strokeRect(rx, ry, rw, rh);
+
+        if (win.active) {
             ctx.save();
-            // Halo de lumière plus intense pour mobile
-            ctx.fillStyle = "rgba(255, 255, 255, 0.4)"; 
-            ctx.fillRect(win.x, win.y, win.w, win.h);
+            // Création du masque de découpe pour la fenêtre
+            ctx.beginPath();
+            ctx.rect(rx, ry, rw, rh);
+            ctx.clip();
+
+            // Dessin du pattern textile
+            const ptrn = ctx.createPattern(patternCanvas, 'repeat');
+            ctx.fillStyle = ptrn;
+            ctx.globalAlpha = 0.8;
+            ctx.fillRect(rx, ry, rw, rh);
             
-            ctx.shadowBlur = 30;
-            ctx.shadowColor = "white";
-            ctx.strokeStyle = "gold";
-            ctx.lineWidth = 5;
-            ctx.strokeRect(win.x, win.y, win.w, win.h);
-            
-            // Motif plus gros
-            ctx.fillStyle = playerColor;
-            ctx.shadowBlur = 0;
-            ctx.font = "bold 80px serif";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(patternChar, win.x + win.w/2, win.y + win.h/2);
+            // Effet d'éclat (Bloom)
+            ctx.globalCompositeOperation = 'lighter';
+            ctx.fillStyle = "rgba(255,255,255,0.2)";
+            ctx.fillRect(rx, ry, rw, rh);
             ctx.restore();
         }
     });
+
+    // 3. Système de particules
+    updateParticles();
+
+    requestAnimationFrame(animate);
 }
 
-// function draw() {
-//     ctx.clearRect(0, 0, canvas.width, canvas.height);
+function updateParticles() {
+    particles.forEach((p, i) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= 0.02;
+        if (p.alpha <= 0) particles.splice(i, 1);
+        
+        ctx.fillStyle = CONFIG.playerColor;
+        ctx.globalAlpha = p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
+        ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+}
+
+function spawnParticles(x, y) {
+    for(let i=0; i<15; i++) {
+        particles.push({
+            x: x, y: y,
+            vx: (Math.random() - 0.5) * 10,
+            vy: (Math.random() - 0.5) * 10,
+            size: Math.random() * 5 + 2,
+            alpha: 1
+        });
+    }
+}
+
+/**
+ * LOGIQUE DE JEU (State Machine)
+ */
+async function startNextLevel() {
+    gameState = 'WATCHING';
+    document.getElementById('status').innerText = "OBSERVE...";
+    sequence.push(Math.floor(Math.random() * CONFIG.windows.length));
+    document.getElementById('score').innerText = `Niveau : ${sequence.length}`;
+
+    for (const id of sequence) {
+        await new Promise(r => setTimeout(r, 600));
+        CONFIG.windows[id].active = true;
+        await new Promise(r => setTimeout(r, 400));
+        CONFIG.windows[id].active = false;
+    }
     
-//     // 1. Dessin de l'image de fond
-//     if (backgroundImage.complete) {
-//         ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
-//     }
+    gameState = 'PLAYING';
+    document.getElementById('status').innerText = "À TOI !";
+}
 
-//     // 2. DESSIN DES CASES DE DÉBOGAGE (PROVISOIRE)
-//     // Retire ce bloc une fois que tes fenêtres sont bien calées
-//     ctx.save();
-//     ctx.strokeStyle = "red";
-//     ctx.lineWidth = 3;
-//     ctx.fillStyle = "rgba(255, 0, 0, 0.3)"; // Rouge transparent
-//     windows.forEach(win => {
-//         ctx.fillRect(win.x, win.y, win.w, win.h);
-//         ctx.strokeRect(win.x, win.y, win.w, win.h);
-//         // Affiche l'ID pour savoir quelle ligne du code modifier
-//         ctx.fillStyle = "white";
-//         ctx.font = "20px Arial";
-//         ctx.fillStyle = "rgba(255, 0, 0, 0.3)";
-//     });
-//     ctx.restore();
-
-//     // 3. Dessin des effets quand une fenêtre est active (le jeu normal)
-//     windows.forEach((win) => {
-//         if(win.active) {
-//             ctx.save();
-//             ctx.fillStyle = "rgba(255, 255, 255, 0.6)"; 
-//             ctx.fillRect(win.x, win.y, win.w, win.h);
-//             ctx.fillStyle = playerColor;
-//             ctx.font = "bold 80px serif";
-//             ctx.textAlign = "center";
-//             ctx.textBaseline = "middle";
-//             ctx.fillText(patternChar, win.x + win.w/2, win.y + win.h/2);
-//             ctx.restore();
-//         }
-//     });
-// }
-
-// GESTION TOUCHER MOBILE AVEC CALCUL DE RATIO
 canvas.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    if (isWatching) return;
-
-    const rect = canvas.getBoundingClientRect();
+    if (gameState !== 'PLAYING') return;
     const touch = e.touches[0];
-    
-    // On calcule où l'utilisateur a touché relativement au dessin interne (600x800)
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const mx = (touch.clientX - rect.left) * scaleX;
-    const my = (touch.clientY - rect.top) * scaleY;
-    
-    windows.forEach((win) => {
-        if (mx > win.x && mx < win.x + win.w && my > win.y && my < win.y + win.h) {
-            handlePlayerClick(win.id);
+    const rect = canvas.getBoundingClientRect();
+    const mx = (touch.clientX - rect.left) * (canvas.width / rect.width);
+    const my = (touch.clientY - rect.top) * (canvas.height / rect.height);
+
+    CONFIG.windows.forEach((win, index) => {
+        const rx = (win.x / 1000) * canvas.width;
+        const ry = (win.y / 1000) * canvas.height;
+        const rw = (win.w / 1000) * canvas.width;
+        const rh = (win.h / 1000) * canvas.height;
+
+        if (mx > rx && mx < rx + rw && my > ry && my < ry + rh) {
+            handleInput(index, mx, my);
         }
     });
-}, { passive: false });
+});
 
-function handlePlayerClick(id) {
-    if (id === sequence[playerStep]) {
+function handleInput(id, x, y) {
+    if (id === sequence[playerInput.length]) {
+        playerInput.push(id);
+        spawnParticles(x, y);
         flashWindow(id);
-        playerStep++;
-        if (playerStep === sequence.length) {
-            if (sequence.length >= 4) setTimeout(victory, 600);
-            else setTimeout(initLevel, 800);
+        
+        if (playerInput.length === sequence.length) {
+            playerInput = [];
+            if (sequence.length >= CONFIG.winTarget) {
+                gameState = 'WIN';
+                document.getElementById('status').innerText = "VICTOIRE !";
+                // Ici tu peux déclencher ton animation finale
+            } else {
+                setTimeout(startNextLevel, 1000);
+            }
         }
     } else {
-        msg.innerText = "Erreur ! Henriette recommence...";
-        msg.style.color = "#ff4d4d";
-        sequence = [];
-        setTimeout(initLevel, 1200);
+        gameState = 'FAIL';
+        document.getElementById('status').innerText = "ERREUR !";
+        sequence = []; playerInput = [];
+        setTimeout(startNextLevel, 1500);
     }
 }
 
-function victory() {
-    document.getElementById('win-overlay').style.display = 'flex';
-    ctx.globalAlpha = 1;
-    ctx.fillStyle = playerColor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    ctx.fillStyle = "white";
-    ctx.font = "60px serif";
-    for(let y=60; y<canvas.height; y+=120) {
-        for(let x=60; x<canvas.width; x+=120) {
-            ctx.fillText(patternChar, x, y);
-        }
-    }
+function flashWindow(id) {
+    CONFIG.windows[id].active = true;
+    setTimeout(() => CONFIG.windows[id].active = false, 300);
 }
 
-function wait(ms) { return new Promise(res => setTimeout(res, ms)); }
+animate();

@@ -1,79 +1,33 @@
 body {
-    background: #1a1a2e;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    height: 100vh;
+    background: #0f0f1a;
+    color: #fff;
     margin: 0;
-    font-family: 'Georgia', serif;
-    color: #e6d5b8;
     overflow: hidden;
+    font-family: 'Segoe UI', sans-serif;
     touch-action: none;
 }
 
-.hud {
-    padding: 15px 0;
-    text-align: center;
+#ui {
+    position: absolute;
+    top: 0;
     width: 100%;
-    background: rgba(0, 0, 0, 0.3);
-    z-index: 5;
-}
-
-h1 {
-    font-size: 1.4rem;
-    margin: 0;
-    color: gold;
-}
-
-#msg {
-    font-size: 1rem;
-    margin-top: 5px;
-    min-height: 1.2em;
-}
-
-#game-wrap {
-    position: relative;
-    width: 100vw;
-    height: calc(100vh - 80px);
-    /* Prend tout le reste de l'écran */
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    text-align: center;
+    z-index: 10;
+    pointer-events: none;
 }
 
 canvas {
-    background: #000;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-    /* Garde les proportions de l'image */
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    display: block;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
 }
 
-.win-overlay {
+.debug-panel {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: none;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    background: rgba(0, 0, 0, 0.9);
-    text-align: center;
-    z-index: 10;
-}
-
-button {
-    padding: 15px 40px;
-    font-size: 20px;
-    cursor: pointer;
-    background: #d4213d;
-    color: white;
-    border: none;
-    border-radius: 50px;
-    margin-top: 20px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 5px;
+    font-size: 10px;
 }
