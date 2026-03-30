@@ -1,205 +1,149 @@
-/**
- * CONFIGURATION DU JEU
- */
-const CONFIG = {
-    playerColor: "#D4213D",
-    patternChar: "❁",
-    imgSrc: 'maison_henriette.jpg',
-    winTarget: 5,
-    // Coordonnées relatives (en % de 0 à 1000 pour la précision)
-    // A ajuster pour tes fenêtres
-    windows: [
-        { id: 0, x: 180, y: 150, w: 120, h: 180 },
-        { id: 1, x: 700, y: 150, w: 120, h: 180 },
-        { id: 2, x: 180, y: 550, w: 120, h: 180 },
-        { id: 3, x: 700, y: 550, w: 120, h: 180 }
-    ]
-};
+  const COLS = 17;   // doit être impair
+  const ROWS = 35;   // doit être impair
+  const CELL = 20;
 
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
-let sequence = [];
-let playerInput = [];
-let gameState = 'LOADING';
-let particles = [];
-let patternCanvas;
+  const canvas = document.getElementById('maze');
+  const ctx = canvas.getContext('2d');
+  canvas.width  = COLS * CELL;
+  canvas.height = ROWS * CELL;
 
-// Initialisation
-const bg = new Image();
-bg.src = CONFIG.imgSrc;
-bg.onload = () => {
-    resize();
-    createPattern();
-    gameState = 'IDLE';
-    startNextLevel();
-};
+  // Couleurs
+  const C_WALL    = '#222';
+  const C_PATH    = '#fff';
+  const C_VISITED = '#fff';
+  const C_PLAYER  = '#1D9E75';
+  const C_END     = '#D85A30';
+  const C_CURRENT = '#fff';
 
-/**
- * Génère un pattern textile en mémoire
- */
-function createPattern() {
-    patternCanvas = document.createElement('canvas');
-    const pCtx = patternCanvas.getContext('2d');
-    patternCanvas.width = 60;
-    patternCanvas.height = 60;
-    
-    // Fond couleur gagnée
-    pCtx.fillStyle = CONFIG.playerColor;
-    pCtx.fillRect(0, 0, 60, 60);
-    
-    // Motif blanc par dessus
-    pCtx.fillStyle = "rgba(255,255,255,0.3)";
-    pCtx.font = "30px serif";
-    pCtx.textAlign = "center";
-    pCtx.textBaseline = "middle";
-    pCtx.fillText(CONFIG.patternChar, 30, 30);
-}
+  // Grille : true = mur, false = passage
+  let grid, player, generating;
 
-function resize() {
-    canvas.width = window.innerWidth * window.devicePixelRatio;
-    canvas.height = window.innerHeight * window.devicePixelRatio;
-}
+  // ── helpers ──────────────────────────────────────────────
+  function idx(c, r) { return r * COLS + c; }
 
-/**
- * Loop de rendu principale
- */
-function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // 1. Fond
-    ctx.drawImage(bg, 0, 0, canvas.width, canvas.height);
+  function collision(c, r) {
+    return c >= 0 && c < COLS && r >= 0 && r < ROWS;
+  }
 
-    // 2. Rendu des fenêtres avec masquage
-    CONFIG.windows.forEach(win => {
-        const rx = (win.x / 1000) * canvas.width;
-        const ry = (win.y / 1000) * canvas.height;
-        const rw = (win.w / 1000) * canvas.width;
-        const rh = (win.h / 1000) * canvas.height;
+  function drawCell(c, r, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(c * CELL, r * CELL, CELL, CELL);
+  }
 
-        // DEBUG : Rectangle rouge de placement (à retirer à la fin)
-        ctx.strokeStyle = "red"; ctx.strokeRect(rx, ry, rw, rh);
+  function drawPlayer() {
+    ctx.fillStyle = C_PLAYER;
+    ctx.beginPath();
+    ctx.arc(player.c * CELL + CELL/2, player.r * CELL + CELL/2, CELL/2 - 3, 0, Math.PI*2);
+    ctx.fill();
+  }
 
-        if (win.active) {
-            ctx.save();
-            // Création du masque de découpe pour la fenêtre
-            ctx.beginPath();
-            ctx.rect(rx, ry, rw, rh);
-            ctx.clip();
+  function drawEnd() {
+    ctx.fillStyle = C_END;
+    ctx.fillRect((COLS-2)*CELL + 4, (ROWS-2)*CELL + 4, CELL - 8, CELL - 8);
+  }
 
-            // Dessin du pattern textile
-            const ptrn = ctx.createPattern(patternCanvas, 'repeat');
-            ctx.fillStyle = ptrn;
-            ctx.globalAlpha = 0.8;
-            ctx.fillRect(rx, ry, rw, rh);
-            
-            // Effet d'éclat (Bloom)
-            ctx.globalCompositeOperation = 'lighter';
-            ctx.fillStyle = "rgba(255,255,255,0.2)";
-            ctx.fillRect(rx, ry, rw, rh);
-            ctx.restore();
-        }
-    });
+  // ── génération DFS animée ────────────────────────────────
+  function newMaze() {
+    generating = true;
+    document.getElementById('btn').disabled = true;
+    document.getElementById('status').textContent = 'Génération en cours...';
 
-    // 3. Système de particules
-    updateParticles();
+    // Tout en murs
+    grid = new Array(COLS * ROWS).fill(true);
 
-    requestAnimationFrame(animate);
-}
+    // Fond noir
+    ctx.fillStyle = C_WALL;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-function updateParticles() {
-    particles.forEach((p, i) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha -= 0.02;
-        if (p.alpha <= 0) particles.splice(i, 1);
-        
-        ctx.fillStyle = CONFIG.playerColor;
-        ctx.globalAlpha = p.alpha;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-        ctx.fill();
-    });
-    ctx.globalAlpha = 1;
-}
+    const stack = [];
+    const startC = 1, startR = 1;
 
-function spawnParticles(x, y) {
-    for(let i=0; i<15; i++) {
-        particles.push({
-            x: x, y: y,
-            vx: (Math.random() - 0.5) * 10,
-            vy: (Math.random() - 0.5) * 10,
-            size: Math.random() * 5 + 2,
-            alpha: 1
-        });
+    function carve(c, r) {
+      grid[idx(c, r)] = false;
+      drawCell(c, r, C_VISITED);
+      stack.push([c, r]);
     }
-}
 
-/**
- * LOGIQUE DE JEU (State Machine)
- */
-async function startNextLevel() {
-    gameState = 'WATCHING';
-    document.getElementById('status').innerText = "OBSERVE...";
-    sequence.push(Math.floor(Math.random() * CONFIG.windows.length));
-    document.getElementById('score').innerText = `Niveau : ${sequence.length}`;
+    carve(startC, startR);
 
-    for (const id of sequence) {
-        await new Promise(r => setTimeout(r, 600));
-        CONFIG.windows[id].active = true;
-        await new Promise(r => setTimeout(r, 400));
-        CONFIG.windows[id].active = false;
-    }
-    
-    gameState = 'PLAYING';
-    document.getElementById('status').innerText = "À TOI !";
-}
+    const dirs = [[0,-2],[2,0],[0,2],[-2,0]];
 
-canvas.addEventListener('touchstart', (e) => {
-    if (gameState !== 'PLAYING') return;
-    const touch = e.touches[0];
-    const rect = canvas.getBoundingClientRect();
-    const mx = (touch.clientX - rect.left) * (canvas.width / rect.width);
-    const my = (touch.clientY - rect.top) * (canvas.height / rect.height);
+    function step() {
+      if (stack.length === 0) {
+        // Génération terminée
+        generating = false;
+        player = { c: 1, r: 1 };
+        // Repeindre tout proprement
+        redrawAll();
+        document.getElementById('btn').disabled = false;
+        document.getElementById('status').textContent = 'Utilisez les flèches pour vous déplacer';
+        return;
+      }
 
-    CONFIG.windows.forEach((win, index) => {
-        const rx = (win.x / 1000) * canvas.width;
-        const ry = (win.y / 1000) * canvas.height;
-        const rw = (win.w / 1000) * canvas.width;
-        const rh = (win.h / 1000) * canvas.height;
+      const [c, r] = stack[stack.length - 1];
 
-        if (mx > rx && mx < rx + rw && my > ry && my < ry + rh) {
-            handleInput(index, mx, my);
+      // Voisins non visités (à distance 2)
+      const shuffled = dirs.slice().sort(() => Math.random() - 0.5);
+      let moved = false;
+
+      for (const [dc, dr] of shuffled) {
+        const nc = c + dc, nr = r + dr;
+        if (collision(nc, nr) && grid[idx(nc, nr)]) {
+          // Creuse le mur entre les deux
+          grid[idx(c + dc/2, r + dr/2)] = false;
+          drawCell(c + dc/2, r + dr/2, C_VISITED);
+          carve(nc, nr);
+          // Surligne la cellule courante
+          drawCell(nc, nr, C_CURRENT);
+          moved = true;
+          break;
         }
-    });
-});
+      }
 
-function handleInput(id, x, y) {
-    if (id === sequence[playerInput.length]) {
-        playerInput.push(id);
-        spawnParticles(x, y);
-        flashWindow(id);
-        
-        if (playerInput.length === sequence.length) {
-            playerInput = [];
-            if (sequence.length >= CONFIG.winTarget) {
-                gameState = 'WIN';
-                document.getElementById('status').innerText = "VICTOIRE !";
-                // Ici tu peux déclencher ton animation finale
-            } else {
-                setTimeout(startNextLevel, 1000);
-            }
-        }
-    } else {
-        gameState = 'FAIL';
-        document.getElementById('status').innerText = "ERREUR !";
-        sequence = []; playerInput = [];
-        setTimeout(startNextLevel, 1500);
+      if (!moved) stack.pop();
+
+      requestAnimationFrame(step);
     }
-}
 
-function flashWindow(id) {
-    CONFIG.windows[id].active = true;
-    setTimeout(() => CONFIG.windows[id].active = false, 300);
-}
+    requestAnimationFrame(step);
+  }
 
-animate();
+  function redrawAll() {
+    for (let r = 0; r < ROWS; r++) {
+      for (let c = 0; c < COLS; c++) {
+        drawCell(c, r, grid[idx(c, r)] ? C_WALL : C_PATH);
+      }
+    }
+    drawEnd();
+    drawPlayer();
+  }
+
+  // ── contrôles clavier ────────────────────────────────────
+  document.addEventListener('keydown', e => {
+    if (generating) return;
+    const moves = {
+      ArrowUp:    [0, -1],
+      ArrowDown:  [0,  1],
+      ArrowLeft:  [-1, 0],
+      ArrowRight: [1,  0],
+    };
+    const m = moves[e.key];
+    if (!m) return;
+    e.preventDefault();
+
+    const nc = player.c + m[0];
+    const nr = player.r + m[1];
+
+    if (collision(nc, nr) && !grid[idx(nc, nr)]) {
+      player.c = nc;
+      player.r = nr;
+      redrawAll();
+
+      if (player.c === COLS-2 && player.r === ROWS-2) {
+        document.getElementById('status').textContent = '🎉 Bravo, vous avez trouvé la sortie !';
+      }
+    }
+  });
+
+  // ── démarrage ────────────────────────────────────────────
+  newMaze();
