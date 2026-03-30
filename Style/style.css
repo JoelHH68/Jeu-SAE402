@@ -24,3 +24,21 @@ button {
     font-size: 14px;
     color: #555;
 }
+
+
+#controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+#controls div {
+  display: flex;
+  gap: 8px;
+}
+#controls button {
+  width: 60px;
+  height: 60px;
+  font-size: 24px;
+  cursor: pointer;
+}

@@ -12,6 +12,21 @@
 
     <div id="status">Génération en cours...</div>
     <canvas id="maze"></canvas>
+
+    <div id="controls">
+        <button onclick="move(0,-1)">▲</button>
+        <div>
+            <button onclick="move(-1,0)">◀</button>
+            <button onclick="move(1,0)">▶</button>
+        </div>
+        <button onclick="move(0,1)">▼</button>
+    </div>
+    
+    <div>
+        <button onclick="choixNiv('facile')">Facile</button>
+        <button onclick="choixNiv('moyen')">Moyen</button>
+        <button onclick="choixNiv('difficile')">Difficile</button>
+    </div>
     <button onclick="newMaze()" id="btn" disabled>Nouveau labyrinthe</button>
 
     <script src="JavaScript/script.js"></script>
