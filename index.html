@@ -14,21 +14,20 @@
     <canvas id="maze"></canvas>
 
     <div id="controls">
-        <button onclick="move(0,-1)">▲</button>
+        <button id="btn-up">▲</button>
         <div>
-            <button onclick="move(-1,0)">◀</button>
-            <button onclick="move(1,0)">▶</button>
+            <button id="btn-left">◀</button>
+            <button id="btn-right">▶</button>
         </div>
-        <button onclick="move(0,1)">▼</button>
+        <button id="btn-down">▼</button>
     </div>
-    
-    <div>
-        <button onclick="choixNiv('facile')">Facile</button>
-        <button onclick="choixNiv('moyen')">Moyen</button>
-        <button onclick="choixNiv('difficile')">Difficile</button>
-    </div>
-    <button onclick="newMaze()" id="btn" disabled>Nouveau labyrinthe</button>
 
+    <div>
+        <button id="btn-facile">Facile</button>
+        <button id="btn-moyen">Moyen</button>
+        <button id="btn-difficile">Difficile</button>
+    </div>
+    <button id="btn">Nouveau labyrinthe</button>
     <script src="JavaScript/script.js"></script>
 </body>
 

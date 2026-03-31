@@ -221,6 +221,23 @@ function afficher() {
     redrawAll();
 }
 
+document.querySelector('#btn-up').addEventListener('pointerdown', () => up = true);
+document.querySelector('#btn-up').addEventListener('pointerup', () => up = false);
+
+document.querySelector('#btn-left').addEventListener('pointerdown', () => left = true);
+document.querySelector('#btn-left').addEventListener('pointerup', () => left = false);
+
+document.querySelector('#btn-right').addEventListener('pointerdown', () => right = true);
+document.querySelector('#btn-right').addEventListener('pointerup', () => right = false);
+
+document.querySelector('#btn-down').addEventListener('pointerdown', () => down = true);
+document.querySelector('#btn-down').addEventListener('pointerup', () => down = false);
+
+document.querySelector('#btn-facile').addEventListener('click', () => choixNiv('facile'));
+document.querySelector('#btn-moyen').addEventListener('click', () => choixNiv('moyen'));
+document.querySelector('#btn-difficile').addEventListener('click', () => choixNiv('difficile'));
+document.querySelector('#btn').addEventListener('click', () => newMaze());
+
 // ── démarrage ────────────────────────────────────────────
 choixNiv('moyen');
 boucle();
