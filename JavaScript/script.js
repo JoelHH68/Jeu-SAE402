@@ -1,7 +1,12 @@
 const LEVELS = {
-    facile: { cols: 15, rows: 21, cell: 28 },
-    moyen: { cols: 21, rows: 29, cell: 20 },
-    difficile: { cols: 41, rows: 57, cell: 10 },
+    facile: { cols: 11, rows: 15, cell: 28 },
+    moyen: { cols: 15, rows: 21, cell: 20 },
+    difficile: { cols: 31, rows: 43, cell: 10 },
+};
+
+const gameData = {
+    couleur: '#e63946',
+    motif: 'rayures',
 };
 
 let COLS, ROWS, CELL;
@@ -15,7 +20,6 @@ function choixNiv(level) {
     newMaze();
 }
 
-let checkpoints, currentCheckpoint;
 
 const canvas = document.getElementById('maze');
 const ctx = canvas.getContext('2d');
@@ -32,6 +36,8 @@ const C_CURRENT = '#fff';
 
 // Grille : true = mur, false = passage
 let grid, player, generating;
+
+let visited_path = [];
 
 // ── helpers ──────────────────────────────────────────────
 function idx(c, r) { return r * COLS + c; }
@@ -59,6 +65,7 @@ function drawEnd() {
 
 // ── génération DFS animée ────────────────────────────────
 function newMaze() {
+    visited_path = [];
     generating = true;
     document.getElementById('btn').disabled = true;
     document.getElementById('status').textContent = 'Génération en cours...';
@@ -89,7 +96,6 @@ function newMaze() {
                 // Génération terminée
                 generating = false;
                 player = { c: 1, r: 1 };
-                placeCheckpoints();
                 // Repeindre tout proprement
                 redrawAll();
                 document.getElementById('btn').disabled = false;
@@ -127,83 +133,54 @@ function newMaze() {
 }
 
 function redrawAll() {
+
     for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
             drawCell(c, r, grid[idx(c, r)] ? C_WALL : C_PATH);
         }
     }
-    drawEnd();
-    drawCheckpoints();
-    drawPlayer();
-}
 
-function placeCheckpoints() {
-    checkpoints = [];
-    // On cherche des cases qui sont des passages (false) et pas le départ ni l'arrivée
-    let candidates = [];
-    for (let r = 1; r < ROWS - 1; r++)
-        for (let c = 1; c < COLS - 1; c++)
-            if (!grid[idx(c, r)] && !(c === 1 && r === 1) && !(c === COLS - 2 && r === ROWS - 2))
-                candidates.push([c, r]);
-
-    // On en choisit 2 espacés dans la liste pour qu'ils soient pas collés
-    const a = candidates[Math.floor(candidates.length * 0.3)];
-    const b = candidates[Math.floor(candidates.length * 0.7)];
-    checkpoints = [a, b];
-    currentCheckpoint = 0;
-}
-
-function drawCheckpoints() {
-    checkpoints.forEach((cp, i) => {
-        if (i < currentCheckpoint) return; // déjà collecté
-        ctx.fillStyle = i === currentCheckpoint ? '#f7c948' : '#aaa';
-        ctx.beginPath();
-        ctx.arc(cp[0] * CELL + CELL / 2, cp[1] * CELL + CELL / 2, CELL / 2 - 3, 0, Math.PI * 2);
-        ctx.fill();
-        // Numéro
-        ctx.fillStyle = '#000';
-        ctx.font = `bold ${CELL / 2}px monospace`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(i + 1, cp[0] * CELL + CELL / 2, cp[1] * CELL + CELL / 2);
+    visited_path.forEach(p => {
+        ctx.fillStyle = gameData.couleur;
+        ctx.fillRect(p.c * CELL, p.r * CELL, CELL, CELL);
     });
+
+    drawEnd();
+    drawPlayer();
 }
 
 // ── contrôles clavier ────────────────────────────────────
 function move(dc, dr) {
-  if (generating) return;
-  const nc = player.c + dc;
-  const nr = player.r + dr;
-  if (collision(nc, nr) && !grid[idx(nc, nr)]) {
-    player.c = nc;
-    player.r = nr;
+    if (generating) return;
+    const nc = player.c + dc;
+    const nr = player.r + dr;
+    if (collision(nc, nr) && !grid[idx(nc, nr)]) {
+        player.c = nc;
+        player.r = nr;
 
-    const cp = checkpoints[currentCheckpoint];
-    if (cp && player.c === cp[0] && player.r === cp[1]) {
-      currentCheckpoint++;
-      document.getElementById('status').textContent =
-        currentCheckpoint < checkpoints.length ? `Checkpoint ${currentCheckpoint}/2 ✓` : 'Plus qu\'un pas vers la sortie !';
+        if (!visited_path.some(p => p.c === player.c && p.r === player.r))
+            visited_path.push({ c: player.c, r: player.r });
+
+
+        if (player.c === COLS - 2 && player.r === ROWS - 2) {
+            document.getElementById('status').textContent = '🎉 Bravo, vous avez trouvé la sortie !';
+        }
+
+        redrawAll();
     }
-
-    if (player.c === COLS-2 && player.r === ROWS-2 && currentCheckpoint >= checkpoints.length) {
-      document.getElementById('status').textContent = '🎉 Bravo, vous avez trouvé la sortie !';
-    }
-
-    redrawAll();
-  }
 }
 
 document.addEventListener('keydown', e => {
-  const moves = {
-    ArrowUp:    [0, -1],
-    ArrowDown:  [0,  1],
-    ArrowLeft:  [-1, 0],
-    ArrowRight: [1,  0],
-  };
-  const m = moves[e.key];
-  if (!m) return;
-  e.preventDefault();
-  move(m[0], m[1]);
+    const moves = {
+        ArrowUp: [0, -1],
+        ArrowDown: [0, 1],
+        ArrowLeft: [-1, 0],
+        ArrowRight: [1, 0],
+    };
+    const m = moves[e.key];
+    if (!m) return;
+    e.preventDefault();
+    move(m[0], m[1]);
 });
 
 // ── démarrage ────────────────────────────────────────────
