@@ -1,7 +1,7 @@
 const LEVELS = {
-    facile: { cols: 11, rows: 15, cell: 28 },
-    moyen: { cols: 15, rows: 21, cell: 20 },
-    difficile: { cols: 31, rows: 43, cell: 10 },
+    facile:    { cols: 11, rows: 15 },
+    moyen:     { cols: 15, rows: 21 },
+    difficile: { cols: 31, rows: 43 },
 };
 
 const gameData = {
@@ -14,8 +14,8 @@ let COLS, ROWS, CELL;
 function choixNiv(level) {
     COLS = LEVELS[level].cols;
     ROWS = LEVELS[level].rows;
-    CELL = LEVELS[level].cell;
-    canvas.width = COLS * CELL;
+    CELL = Math.floor(Math.min((window.innerWidth -32) / COLS, (window.innerHeight - 32) / ROWS));
+    canvas.width  = COLS * CELL;
     canvas.height = ROWS * CELL;
     newMaze();
 }
@@ -161,27 +161,66 @@ function move(dc, dr) {
         if (!visited_path.some(p => p.c === player.c && p.r === player.r))
             visited_path.push({ c: player.c, r: player.r });
 
-
-        if (player.c === COLS - 2 && player.r === ROWS - 2) {
+        if (player.c === COLS - 2 && player.r === ROWS - 2)
             document.getElementById('status').textContent = '🎉 Bravo, vous avez trouvé la sortie !';
-        }
-
-        redrawAll();
     }
 }
 
-document.addEventListener('keydown', e => {
-    const moves = {
-        ArrowUp: [0, -1],
-        ArrowDown: [0, 1],
-        ArrowLeft: [-1, 0],
-        ArrowRight: [1, 0],
-    };
-    const m = moves[e.key];
-    if (!m) return;
-    e.preventDefault();
-    move(m[0], m[1]);
-});
+let left = false, right = false, up = false, down = false;
+
+window.addEventListener("keydown", appui);
+window.addEventListener("keyup", stopAppui);
+
+function appui(event) {
+    switch(event.key) {
+        case "ArrowUp":    up = true;    break;
+        case "ArrowLeft":  left = true;  break;
+        case "ArrowRight": right = true; break;
+        case "ArrowDown":  down = true;  break;
+    }
+}
+
+function stopAppui(event) {
+    switch(event.key) {
+        case "ArrowUp":    up = false;    break;
+        case "ArrowLeft":  left = false;  break;
+        case "ArrowRight": right = false; break;
+        case "ArrowDown":  down = false;  break;
+    }
+}
+
+let temps1 = performance.now();
+let moveTimer = 0;
+const MOVE_DELAY = 100; // ms entre chaque déplacement
+
+function boucle() {
+    moteur();
+    afficher();
+    window.requestAnimationFrame(boucle);
+}
+
+function moteur() {
+    if (generating) return;
+
+    let temps2 = performance.now();
+    let duree = temps2 - temps1;
+    temps1 = temps2;
+
+    moveTimer += duree;
+    if (moveTimer < MOVE_DELAY) return;
+    moveTimer = 0;
+
+    if (up)    move(0, -1);
+    if (down)  move(0,  1);
+    if (left)  move(-1, 0);
+    if (right) move(1,  0);
+}
+
+function afficher() {
+    if (generating) return;
+    redrawAll();
+}
 
 // ── démarrage ────────────────────────────────────────────
 choixNiv('moyen');
+boucle();
