@@ -96,6 +96,7 @@ function newMaze() {
                 // Génération terminée
                 generating = false;
                 player = { c: 1, r: 1 };
+                visited_path.push({ c: 1, r: 1 });
                 // Repeindre tout proprement
                 redrawAll();
                 document.getElementById('btn').disabled = false;
