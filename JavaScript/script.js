@@ -1,6 +1,6 @@
 const LEVELS = {
-    facile:    { cols: 11, rows: 15 },
-    moyen:     { cols: 15, rows: 21 },
+    facile: { cols: 11, rows: 15 },
+    moyen: { cols: 19, rows: 29 },
     difficile: { cols: 31, rows: 43 },
 };
 
@@ -14,8 +14,11 @@ let COLS, ROWS, CELL;
 function choixNiv(level) {
     COLS = LEVELS[level].cols;
     ROWS = LEVELS[level].rows;
-    CELL = Math.floor(Math.min((window.innerWidth -32) / COLS, (window.innerHeight - 32) / ROWS));
-    canvas.width  = COLS * CELL;
+    CELL = Math.floor(Math.min(
+        (window.innerWidth - 32) / COLS,
+        (window.innerHeight - 180 - 32) / ROWS
+    ));
+    canvas.width = COLS * CELL;
     canvas.height = ROWS * CELL;
     newMaze();
 }
@@ -173,20 +176,20 @@ window.addEventListener("keydown", appui);
 window.addEventListener("keyup", stopAppui);
 
 function appui(event) {
-    switch(event.key) {
-        case "ArrowUp":    up = true;    break;
-        case "ArrowLeft":  left = true;  break;
+    switch (event.key) {
+        case "ArrowUp": up = true; break;
+        case "ArrowLeft": left = true; break;
         case "ArrowRight": right = true; break;
-        case "ArrowDown":  down = true;  break;
+        case "ArrowDown": down = true; break;
     }
 }
 
 function stopAppui(event) {
-    switch(event.key) {
-        case "ArrowUp":    up = false;    break;
-        case "ArrowLeft":  left = false;  break;
+    switch (event.key) {
+        case "ArrowUp": up = false; break;
+        case "ArrowLeft": left = false; break;
         case "ArrowRight": right = false; break;
-        case "ArrowDown":  down = false;  break;
+        case "ArrowDown": down = false; break;
     }
 }
 
@@ -211,10 +214,10 @@ function moteur() {
     if (moveTimer < MOVE_DELAY) return;
     moveTimer = 0;
 
-    if (up)    move(0, -1);
-    if (down)  move(0,  1);
-    if (left)  move(-1, 0);
-    if (right) move(1,  0);
+    if (up) move(0, -1);
+    if (down) move(0, 1);
+    if (left) move(-1, 0);
+    if (right) move(1, 0);
 }
 
 function afficher() {

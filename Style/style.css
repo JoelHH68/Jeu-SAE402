@@ -1,13 +1,47 @@
 body {
     margin: 0;
+    overflow: hidden;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
-    padding: 16px 0;
+    justify-content: space-between;
+    padding: 8px;
+    box-sizing: border-box;
     font-family: monospace;
-    background: #fff;
 }
+
+#status {
+    font-size: 14px;
+    color: #555;
+    text-align: center;
+}
+
+#controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+#controls div {
+    display: flex;
+    gap: 8px;
+}
+
+#controls button {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    cursor: pointer;
+    user-select: none;
+}
+
+#niveau {
+    display: flex;
+    gap: 8px;
+}
+
 
 canvas {
     border: 2px solid #222;
@@ -20,26 +54,5 @@ button {
     cursor: pointer;
 }
 
-#status {
-    font-size: 14px;
-    color: #555;
-}
 
 
-#controls {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-#controls div {
-  display: flex;
-  gap: 8px;
-}
-#controls button {
-  width: 60px;
-  height: 60px;
-  font-size: 24px;
-  cursor: pointer;
-  user-select: none;
-}
