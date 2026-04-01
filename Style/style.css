@@ -55,4 +55,7 @@ button {
 }
 
 
-
+#btn-up, #btn-left, #btn-right, #btn-down {
+    touch-action: none;
+    user-select: none;
+}

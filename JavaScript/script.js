@@ -26,8 +26,6 @@ function choixNiv(level) {
 
 const canvas = document.getElementById('maze');
 const ctx = canvas.getContext('2d');
-canvas.width = COLS * CELL;
-canvas.height = ROWS * CELL;
 
 // Couleurs
 const C_WALL = '#222';
@@ -225,17 +223,23 @@ function afficher() {
     redrawAll();
 }
 
-document.querySelector('#btn-up').addEventListener('pointerdown', () => up = true);
-document.querySelector('#btn-up').addEventListener('pointerup', () => up = false);
+// Remplace pointerdown/pointerup par touchstart/touchend + mousedown/mouseup
+function bindBtn(id, setter) {
+    const el = document.getElementById(id);
+    const on  = () => setter(true);
+    const off = () => setter(false);
+    el.addEventListener('mousedown',    on);
+    el.addEventListener('mouseup',      off);
+    el.addEventListener('mouseleave',   off);
+    el.addEventListener('touchstart',   e => { e.preventDefault(); on(); },  { passive: false });
+    el.addEventListener('touchend',     e => { e.preventDefault(); off(); }, { passive: false });
+    el.addEventListener('touchcancel',  off);
+}
 
-document.querySelector('#btn-left').addEventListener('pointerdown', () => left = true);
-document.querySelector('#btn-left').addEventListener('pointerup', () => left = false);
-
-document.querySelector('#btn-right').addEventListener('pointerdown', () => right = true);
-document.querySelector('#btn-right').addEventListener('pointerup', () => right = false);
-
-document.querySelector('#btn-down').addEventListener('pointerdown', () => down = true);
-document.querySelector('#btn-down').addEventListener('pointerup', () => down = false);
+bindBtn('btn-up',    v => up    = v);
+bindBtn('btn-left',  v => left  = v);
+bindBtn('btn-right', v => right = v);
+bindBtn('btn-down',  v => down  = v);
 
 document.querySelector('#btn-facile').addEventListener('click', () => choixNiv('facile'));
 document.querySelector('#btn-moyen').addEventListener('click', () => choixNiv('moyen'));
