@@ -22,6 +22,7 @@ body {
     font-size: 14px;
     color: #5a4632;
     text-align: center;
+    margin-top: 40px;
 }
 
 /* ⏱ Chrono */
@@ -153,6 +154,11 @@ button:hover {
     background: radial-gradient(circle, #f5ecd7 0%, #e6d3a3 100%);
 }
 
+#screen-start p {
+    text-align: center;
+    max-width: 300px;
+}
+
 /* 🎉 Écran de fin */
 #screen-end {
     background: radial-gradient(circle, #2b1d14, #000);
@@ -234,4 +240,27 @@ button:hover {
         opacity: 1;
         transform: scale(1);
     }
+}
+
+
+#btn-home {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+
+    background: #6b4f3a;
+    color: #f2e8d5;
+
+    border: none;
+    border-radius: 6px;
+
+    padding: 8px 12px;
+    font-size: 14px;
+
+    z-index: 20; /* 🔥 au-dessus de tout */
+}
+
+/* effet press */
+#btn-home:active {
+    transform: scale(0.95);
 }

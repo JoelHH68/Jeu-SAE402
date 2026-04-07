@@ -274,6 +274,9 @@ document.getElementById('start-moyen').classList.add('selected');
 
 document.getElementById('btn-jouer').addEventListener('click', () => {
     document.getElementById('screen-start').classList.add('hidden');
+
+    document.getElementById('niveau').style.display = 'none'; // 🔥 AJOUT
+
     choixNiv(selectedLevel);
     startTime = performance.now();
 });
@@ -301,3 +304,10 @@ function updateChrono() {
     const secondes = String(elapsed % 60).padStart(2, '0');
     document.getElementById('chrono').textContent = `${minutes}:${secondes}`;
 }
+
+document.getElementById('btn-home').addEventListener('click', () => {
+    document.getElementById('screen-start').classList.remove('hidden');
+    document.getElementById('screen-end').classList.add('hidden');
+
+    document.getElementById('niveau').style.display = 'flex'; // 🔥 réaffiche
+});
