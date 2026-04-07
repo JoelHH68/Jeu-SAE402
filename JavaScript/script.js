@@ -68,7 +68,6 @@ function drawEnd() {
 function newMaze() {
     visited_path = [];
     generating = true;
-    document.getElementById('btn').disabled = true;
     document.getElementById('status').textContent = 'Génération en cours...';
 
     // Tout en murs
@@ -100,7 +99,6 @@ function newMaze() {
                 visited_path.push({ c: 1, r: 1 });
                 // Repeindre tout proprement
                 redrawAll();
-                document.getElementById('btn').disabled = false;
                 document.getElementById('status').textContent = 'Utilisez les flèches pour vous déplacer';
                 return;
             }
@@ -164,7 +162,7 @@ function move(dc, dr) {
             visited_path.push({ c: player.c, r: player.r });
 
         if (player.c === COLS - 2 && player.r === ROWS - 2)
-            document.getElementById('status').textContent = '🎉 Bravo, vous avez trouvé la sortie !';
+            showEnd();
     }
 }
 
@@ -221,6 +219,7 @@ function moteur() {
 function afficher() {
     if (generating) return;
     redrawAll();
+    updateChrono();
 }
 
 // Remplace pointerdown/pointerup par touchstart/touchend + mousedown/mouseup
@@ -244,8 +243,55 @@ bindBtn('btn-down',  v => down  = v);
 document.querySelector('#btn-facile').addEventListener('click', () => choixNiv('facile'));
 document.querySelector('#btn-moyen').addEventListener('click', () => choixNiv('moyen'));
 document.querySelector('#btn-difficile').addEventListener('click', () => choixNiv('difficile'));
-document.querySelector('#btn').addEventListener('click', () => newMaze());
+
 
 // ── démarrage ────────────────────────────────────────────
 choixNiv('moyen');
 boucle();
+
+
+
+// ── écran de début ───────────────────────────────────────
+let selectedLevel = 'moyen';
+let startTime = null;
+
+document.querySelectorAll('#niveau-start button').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('#niveau-start button').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedLevel = btn.id.replace('start-', '');
+    });
+});
+
+// Sélectionne "moyen" par défaut visuellement
+document.getElementById('start-moyen').classList.add('selected');
+
+document.getElementById('btn-jouer').addEventListener('click', () => {
+    document.getElementById('screen-start').classList.add('hidden');
+    choixNiv(selectedLevel);
+    startTime = performance.now();
+});
+
+// ── écran de fin ─────────────────────────────────────────
+function showEnd() {
+    const elapsed = Math.floor((performance.now() - startTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const secondes = elapsed % 60;
+    document.getElementById('end-temps').textContent =
+        `Temps : ${minutes > 0 ? minutes + 'min ' : ''}${secondes}s`;
+    document.getElementById('screen-end').classList.remove('hidden');
+}
+
+document.getElementById('btn-rejouer').addEventListener('click', () => {
+    document.getElementById('screen-end').classList.add('hidden');
+    document.getElementById('screen-start').classList.remove('hidden');
+});
+
+
+function updateChrono() {
+    if (!startTime || generating) return;
+    const elapsed = Math.floor((performance.now() - startTime) / 1000);
+    const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
+    const secondes = String(elapsed % 60).padStart(2, '0');
+    document.getElementById('chrono').textContent = `${minutes}:${secondes}`;
+}

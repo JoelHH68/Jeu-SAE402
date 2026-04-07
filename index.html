@@ -10,7 +10,20 @@
 
 <body>
 
+    <!-- Page de début -->
+    <div id="screen-start">
+        <h1>🌀 Labyrinthe</h1>
+        <img src="illustration.png" alt="labyrinthe" id="illus">
+        <div id="niveau-start">
+            <button id="start-facile">Facile</button>
+            <button id="start-moyen">Moyen</button>
+            <button id="start-difficile">Difficile</button>
+        </div>
+        <button id="btn-jouer">Jouer</button>
+    </div>
+
     <div id="status">Génération en cours...</div>
+    <div id="chrono">00:00</div>
     <canvas id="maze"></canvas>
 
     <div id="controls">
@@ -43,7 +56,16 @@
         <button id="btn-moyen">Moyen</button>
         <button id="btn-difficile">Difficile</button>
     </div>
-    <button id="btn">Nouveau labyrinthe</button>
+
+
+    <!-- Page de fin -->
+    <div id="screen-end" class="hidden">
+        <h2>🎉 Bravo !</h2>
+        <p id="end-temps"></p>
+        <button id="btn-rejouer">Rejouer</button>
+    </div>
+
+
     <script src="JavaScript/script.js"></script>
 </body>
 

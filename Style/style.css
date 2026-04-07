@@ -59,3 +59,62 @@ button {
     touch-action: none;
     user-select: none;
 }
+
+
+
+#screen-start, #screen-end {
+    position: fixed;
+    inset: 0;
+    background: rgba(255,255,255,0.97);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    z-index: 10;
+}
+
+#screen-end {
+    background: rgba(0,0,0,0.75);
+    color: white;
+}
+
+#screen-end h2 { font-size: 2rem; margin: 0; }
+#screen-end p  { font-size: 1.2rem; }
+
+#illus {
+    width: 180px;
+    border-radius: 12px;
+}
+
+.hidden { display: none !important; }
+
+#niveau-start { display: flex; gap: 8px; }
+
+#niveau-start button, #btn-jouer, #btn-rejouer {
+    padding: 10px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 8px;
+    border: 2px solid #222;
+}
+
+#btn-jouer, #btn-rejouer {
+    background: #1D9E75;
+    color: white;
+    border-color: #1D9E75;
+    font-size: 18px;
+}
+
+#niveau-start button.selected {
+    background: #222;
+    color: white;
+}
+
+
+#chrono {
+    font-size: 20px;
+    font-family: monospace;
+    color: #222;
+    letter-spacing: 2px;
+}
