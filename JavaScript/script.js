@@ -14,12 +14,18 @@ let COLS, ROWS, CELL;
 function choixNiv(level) {
     COLS = LEVELS[level].cols;
     ROWS = LEVELS[level].rows;
+
+    const padding = 32;
+    const uiSpace = 260; 
+
     CELL = Math.floor(Math.min(
-        (window.innerWidth - 32) / COLS,
-        (window.innerHeight - 180 - 32) / ROWS
+        (window.innerWidth - padding) / COLS,
+        (window.innerHeight - uiSpace) / ROWS
     ));
+
     canvas.width = COLS * CELL;
     canvas.height = ROWS * CELL;
+
     newMaze();
 }
 
