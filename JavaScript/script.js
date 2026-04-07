@@ -28,12 +28,12 @@ const canvas = document.getElementById('maze');
 const ctx = canvas.getContext('2d');
 
 // Couleurs
-const C_WALL = '#222';
-const C_PATH = '#fff';
-const C_VISITED = '#fff';
-const C_PLAYER = '#1D9E75';
-const C_END = '#D85A30';
-const C_CURRENT = '#fff';
+const C_WALL = '#3b2b1f';     // bois sombre
+const C_PATH = '#f2e8d5';     // toile
+const C_VISITED = '#e9dcc3';  // tissu légèrement teint
+const C_PLAYER = '#2f3e6b';   // indigo (Henriette)
+const C_END = '#8b2e2e';      // zone finale
+const C_CURRENT = '#d8c7a0';
 
 // Grille : true = mur, false = passage
 let grid, player, generating;

@@ -1,120 +1,237 @@
+/* 🌍 Ambiance générale (papier ancien) */
 body {
     margin: 0;
     overflow: hidden;
     height: 100vh;
+
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
+
     padding: 8px;
     box-sizing: border-box;
-    font-family: monospace;
+
+    font-family: "Georgia", serif;
+
+    background: radial-gradient(circle, #f5ecd7 0%, #e6d3a3 100%);
 }
 
+/* 🧭 Texte d'état */
 #status {
     font-size: 14px;
-    color: #555;
+    color: #5a4632;
     text-align: center;
 }
 
+/* ⏱ Chrono */
+#chrono {
+    font-size: 20px;
+    font-family: monospace;
+    color: #2f3e6b;
+    /* indigo */
+    letter-spacing: 2px;
+}
+
+/* 🧵 Canvas = tissu */
+canvas {
+    border: 8px solid #6b4f3a;
+    border-radius: 12px;
+
+    max-width: 55vh;
+
+    background: repeating-linear-gradient(0deg,
+            #f2e8d5,
+            #f2e8d5 8px,
+            #e9dcc3 8px,
+            #e9dcc3 16px);
+
+    box-shadow:
+        inset 0 0 20px rgba(0, 0, 0, 0.2),
+        0 10px 30px rgba(0, 0, 0, 0.3);
+
+    display: block;
+}
+
+/* 🎮 Contrôles */
 #controls {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    margin-top: 4px;
 }
 
-#controls div {
+#controls > div {
     display: flex;
-    gap: 8px;
+    justify-content: center;
+    gap: 6px;
 }
 
-#controls button {
-    width: 60px;
-    height: 60px;
-    font-size: 24px;
-    cursor: pointer;
-    user-select: none;
+/* Boutons direction */
+#btn-up, #btn-left, #btn-right, #btn-down {
+    width: 50px;
+    height: 50px;
+    padding: 6px;
+
+    background: #f2e8d5;
+    border: 2px solid #6b4f3a;
+    border-radius: 50%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: transform 0.05s, background 0.1s;
 }
 
+#btn-up:active, 
+#btn-left:active, 
+#btn-right:active, 
+#btn-down:active {
+    background: #d8c7a0;
+    transform: scale(0.92);
+}
+
+
+/* 🎛️ Niveaux */
 #niveau {
     display: flex;
     gap: 8px;
 }
 
-
-canvas {
-    border: 2px solid #222;
-    display: block;
-}
-
+/* 🎯 Boutons généraux */
 button {
     padding: 6px 16px;
     font-size: 14px;
     cursor: pointer;
+
+    border-radius: 6px;
+    border: 2px solid #6b4f3a;
+
+    background: #f2e8d5;
+    color: #3b2b1f;
+
+    transition: 0.2s;
 }
 
-
-#btn-up, #btn-left, #btn-right, #btn-down {
-    touch-action: none;
-    user-select: none;
+button:hover {
+    background: #e6d3a3;
 }
 
+/* Boutons principaux */
+#btn-jouer,
+#btn-rejouer {
+    background: #8b2e2e;
+    color: white;
+    border-color: #8b2e2e;
+    font-size: 18px;
+}
 
+#btn-jouer:hover,
+#btn-rejouer:hover {
+    background: #6e2323;
+}
 
-#screen-start, #screen-end {
+/* 🏁 Écrans (start + end) */
+#screen-start,
+#screen-end {
     position: fixed;
     inset: 0;
-    background: rgba(255,255,255,0.97);
+
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+
     gap: 16px;
     z-index: 10;
 }
 
-#screen-end {
-    background: rgba(0,0,0,0.75);
-    color: white;
+/* 🎬 Écran de départ */
+#screen-start {
+    background: radial-gradient(circle, #f5ecd7 0%, #e6d3a3 100%);
 }
 
-#screen-end h2 { font-size: 2rem; margin: 0; }
-#screen-end p  { font-size: 1.2rem; }
+/* 🎉 Écran de fin */
+#screen-end {
+    background: radial-gradient(circle, #2b1d14, #000);
+    color: #f2e8d5;
+    text-align: center;
 
+    animation: fadeIn 0.6s ease;
+}
+
+/* Effet tissu final */
+#screen-end::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+
+    background: repeating-linear-gradient(45deg,
+            rgba(230, 57, 70, 0.15),
+            rgba(230, 57, 70, 0.15) 10px,
+            transparent 10px,
+            transparent 20px);
+
+    opacity: 0.4;
+}
+
+/* Texte fin */
+#screen-end h2 {
+    font-size: 2.2rem;
+    margin: 0;
+    letter-spacing: 2px;
+}
+
+#screen-end p {
+    font-size: 1.2rem;
+    color: #e6d3a3;
+}
+
+/* 🖼 Illustration */
 #illus {
     width: 180px;
     border-radius: 12px;
+    border: 3px solid #6b4f3a;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-.hidden { display: none !important; }
-
-#niveau-start { display: flex; gap: 8px; }
-
-#niveau-start button, #btn-jouer, #btn-rejouer {
-    padding: 10px 24px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 8px;
-    border: 2px solid #222;
-}
-
-#btn-jouer, #btn-rejouer {
-    background: #1D9E75;
-    color: white;
-    border-color: #1D9E75;
-    font-size: 18px;
+/* 🎚 Niveau départ */
+#niveau-start {
+    display: flex;
+    gap: 8px;
 }
 
 #niveau-start button.selected {
-    background: #222;
+    background: #3b2b1f;
     color: white;
 }
 
+/* ❌ Caché */
+.hidden {
+    display: none !important;
+}
 
-#chrono {
-    font-size: 20px;
-    font-family: monospace;
-    color: #222;
-    letter-spacing: 2px;
+/* 📱 interactions */
+#btn-up,
+#btn-left,
+#btn-right,
+#btn-down {
+    touch-action: none;
+    user-select: none;
+}
+
+/* ✨ Animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
